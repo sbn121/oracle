@@ -249,11 +249,89 @@ FROM    DUAL;
 
 
 
-
-
-
-
 -- 3.3 날짜함수
+-- 날짜와 더불어 시간을 연산 대상으로 한다.
+
+-- 3.3.1 SYSDATE()
+-- 시스템의 현재 날짜를 가져와 반환하는 함수
+-- 이 날짜는 시각을 포함하고 있다.
+-- SYSDATE함수는 다른 함수와 다르게 파라미터가 없다. ()를 사용하지 않는다.
+-- SYSDATE() : 엄청 자주, 일반적으로 쓰는 함수 --> SYSDATE로 표기
+
+SELECT  SYSDATE
+FROM    DUAL; --23/05/09 <==> 시스템 날짜 형식 : RR/MM/DD
+-- YY vs RR 표기법 : 50 이상이면 1900년대, 50 미만이면 2000년대 표기
+-- 99/05/09 ==> 1999/05/09
+-- 03/05/09 ==> 2003/05/09
+
+-- 날짜 형식(Format) 을 확인하는 SQL
+SELECT  *
+FROM    v$nls_parameters; -- : 공용뷰(누구나 쓸 수) vs 권한마다 다름..
+-- NLS_DATE_FORMAT : RR/MM/DD --> YY/MM/DD, YYYY/MM/DD, YY/MM/DD HH:MI:SS ... [날짜/시간 형식 지정]
+
+-- 일시적으로 날짜 포맷을 기존 : 날짜 --> 변경 : 날짜+시간 형식으로 변경
+-- 영구적인 설정 X, 현재 로그인된 HR 세션에서만 유효!
+-- 도구 > 환경설정 > 데이터베이스 > NLS : 날짜 포맷
+ALTER SESSION SET nls_date_format = 'RR/MM/DD HH24:MI:SS';  -- 24시간제 표시, HH 12시간제
+ALTER SESSION SET nls_date_format = 'RR/MM/DD'; -- 원래 기본 설정
+
+SELECT  SYSDATE, SYSTIMESTAMP
+FROM    DUAL;
+
+-- =======================================================================
+-- 설정을 매번 바꾸어서 날짜, 시간을 출력하는 것은 불편하므로,
+-- 변환 함수를 사용하여, 그때그때 원하는 형식으로 출력하는 편이 낫다
+-- =======================================================================
+SELECT SYSDATE, -- 설정에 의해서 날짜+시간 출력
+        TO_DATE('2023-05-09 17:32:20', 'RR/MM/DD HH24:MI:SS') SYSDATE_TIME  --변환함수로 문자 --> 날짜
+FROM    DUAL;
+
+
+                          
+-- 테이블 / table (객체) : 데이터를 저장
+-- 뷰 / view(객체) : 테이블의 일부만 추출해서 마치 테이블처럼 사용(조회 | 저장...)
+-- HR 계정, EMP_DETAILS_VIEW (사원_세부정보 담은 뷰)
+SELECT  *
+FROM    EMP_DETAILS_VIEW; -- 뷰를 조회! (임시 뷰 - 메모리에서 존재)
+
+-- 3.3.1 ADD_MONTHS(date, n) : date에 개월 수 n을 더해서 그 결과(날짜)를 반환하는 함수
+-- n : integer
+[예제 3-21] 
+SELECT  ADD_MONTHS(SYSDATE, 1) MONTH1,
+        ADD_MONTHS(SYSDATE, 2) MONTH2,
+        ADD_MONTHS(SYSDATE, -3) MONTHS -- 3개월전
+FROM    DUAL;
+
+-- 3.3.2 MONTHS_BETWEEN(date1, date2) : 두 날짜 사이의 개월 수를 구하여 반환하는 함수
+-- date1 : 이후 날짜
+-- date2 : 이전 날짜
+-- ※ date1 - date2 형식으로 계산
+
+
+[예제 3-22]
+-- ROUND(n, 0)
+-- TRUNC(n, 0)
+-- CEIL(n)
+-- FLOOR(n)
+-- ABS(n)
+SELECT  ROUND(MONTHS_BETWEEN('2013-03-20', SYSDATE)) AS REMAINED, 
+        ABS(TRUNC(MONTHS_BETWEEN(SYSDATE, '2013-08-28'))) AS PASS
+FROM    DUAL;
+
+-- 3.3.3 LAST_DAY(date) : date에 해당하는 달의 마지막 날짜를 반환한다.
+-- 3월이면 31 반환, 4월이면 30 반환
+-- 오늘 날짜 5월은 31일!
+-- 매월 말 보고서를 자동으로 생성하거나, 관련 데이터(비용 지출 내역?) 등을 월말 보고로 자동생성하는
+-- 서비스를 생성하거나 하는 기능에서 필요할 수 있는 함수
+SELECT  LAST_DAY(SYSDATE) LAST1,
+        LAST_DAY('2013-03-20') AS LAST2
+FROM    DUAL;
+
+
+SELECT  employee_id, first_name, hire_date
+FROM    employees;
+
+
 -- 3.4 변환함수
 -- 3.5 일반함수
 
