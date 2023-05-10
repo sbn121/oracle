@@ -299,7 +299,7 @@ FROM    EMP_DETAILS_VIEW; -- 뷰를 조회! (임시 뷰 - 메모리에서 존재)
 [예제 3-21] 
 SELECT  ADD_MONTHS(SYSDATE, 1) MONTH1,
         ADD_MONTHS(SYSDATE, 2) MONTH2,
-        ADD_MONTHS(SYSDATE, -3) MONTHS -- 3개월전
+        ADD_MONTHS(SYSDATE, -3) MONTH3 -- 3개월전
 FROM    DUAL;
 
 -- 3.3.2 MONTHS_BETWEEN(date1, date2) : 두 날짜 사이의 개월 수를 구하여 반환하는 함수
@@ -331,8 +331,267 @@ FROM    DUAL;
 SELECT  employee_id, first_name, hire_date
 FROM    employees;
 
+-- 3.3.4 NEXT_DAY(date, char) : date 이후 날짜중에 char로 명시된 첫 번째 일자를 반환하는 함수
+--                              돌아오는 요일(char)의 날짜를 반환하는 함수
+-- NLS : 언어 설정이 KOREAN(요일 : SUNDAY, MONDAY... <---> 일요일, 월요일...)
 
--- 3.4 변환함수
--- 3.5 일반함수
+[예제 3-24]
+--ORA-01846: 지정한 요일이 부적합합니다.
+--01846. 00000 -  "not a valid day of the week"
+SELECT  NEXT_DAY(SYSDATE, '월요일') NEXT1,
+        NEXT_DAY(SYSDATE, '금요일') NEXT2,
+        NEXT_DAY(SYSDATE, '일') NEXT3,
+        NEXT_DAY(SYSDATE, '화') NEXT4,
+        NEXT_DAY(SYSDATE, 4) NEXT5
+FROM    DUAL;
+
+--NLS 설정 : 한국에서 오라클 설치 ==> 자동으로 KOREAN, 요일명도 한글로!
+
+SELECT  *
+FROM    v$nls_parameters; -- NLS_LANGUAGE : KOREAN, 요일명도 한글로!
+
+-- 도구 > 환경설정 > 데이터베이스 > NLS - 날짜언어 : KOREAN
+
+
+-- 3.3.5 반올림함수, 버림함수
+-- ※ 숫자, 날짜에도 적용 가능한 함수, 하지만! 평소에는 숫자에..어떤 특정 업무? 특수한 직무에서 사용할 수 있음.
+-- 특수한 직무에서 사용할 수 있음. (함수의 특징으로만 구분)
+-- ROUND(n [,i]), ROUND(date, fmt) : fmt - 출력 형식
+-- TRUNC(n [,i]), TRUNC(date, fmt)
+
+[예제 3-25]
+-- 자동형변환 (=묵시적 형변환)
+SELECT  10+'5'
+FROM    DUAL; -- '10'를 10으로 알아서 변환해서 연산한 결과 15를 변환
+
+SELECT  10+'ABCD'
+FROM    DUAL; -- ORA-01722: 수치가 부적합합니다 ==> 숫자라고 판단할 수 있는 문자데이터는 형변환
+-- ※
+
+-- 형변환 : 강제로, NUMBER --> DATE 바로 변환 x
+--        TO_NUMBER()       TO_CHAR()
+-- NUMBER <---------- CHAR <-------- DATE
+--        ---------->      -------->
+--          TO_CHAR()       TO_DATE()
+
+-- TO_DATE() : 문자를 날짜 형식으로 변환하는 함수
+-- TO_DATE() : 문자로 바꾸는 함수
+-- TO_NUMBER() : 숫자로 바꾸는 함수
+-- YYYY or RRRR : 년도를 4자리로 표현
+[예제 3-25]
+SELECT  ROUND(TO_DATE('2013-06-30'), 'YYYY') AS R1,
+        ROUND(TO_DATE('2013-07-01'), 'YEAR') AS R2,
+        ROUND(TO_DATE('2013-12-16'), 'MONTH') AS R3,
+        ROUND(TO_DATE('2013-12-16'), 'MM') AS R4,
+        ROUND(TO_DATE('2013-05-27 11:59:59', 'YYYY-MM-DD HH24:MI:SS'), 'DD') AS R5,
+        ROUND(TO_DATE('2013-05-27 12:00:00', 'YYYY-MM-DD HH:MI:SS'), 'DD') AS R6,
+        ROUND(TO_DATE('2013_05_29'), 'DAY') AS R7,
+        ROUND(TO_DATE('2013_05-30'), 'DAY') AS R8
+FROM    DUAL;
+
+[예제 3-26]
+SELECT  TRUNC(TO_DATE('2013-06-30'), 'YYYY') AS T1,
+        TRUNC(TO_DATE('2013-07-01'), 'YEAR') AS T2,
+        TRUNC(TO_DATE('2013-12-16'), 'MONTH') AS T3,
+        TRUNC(TO_DATE('2013-12-16'), 'MM') AS T4,
+        TRUNC(TO_DATE('2013-05-27 11:59:59', 'YYYY-MM-DD HH24:MI:SS'), 'DD') AS T5,
+        TRUNC(TO_DATE('2013-05-27 12:00:00', 'YYYY-MM-DD HH:MI:SS'), 'DD') AS T6,
+        TRUNC(TO_DATE('2013_05_29'), 'DAY') AS T7,
+        TRUNC(TO_DATE('2013_05-30'), 'DAY') AS T8
+FROM    DUAL;
+
+-- 3.4 변환함수 (p.30)
+-- 오라클은 묵시적인 형변환 ==> 숫자+'숫자' (ok), 숫자+'문자' (nol)
+-- 명시적인 형변환 함수들 3가지!! (기본 사용법, 형식)
+-- 형변환 : NUMBER --> DATE 바로 변환 x
+
+--        TO_NUMBER()       TO_CHAR()
+--       <----------       <-------- 
+-- NUMBER             CHAR            DATE
+--  3rd                1st            2nd
+--        ---------->      -------->
+--          TO_CHAR()       TO_DATE()
+
+-- 3.4.1 TO_CHAR(date [,fmt])
+-- fmt : 년, 월, 일, 시, 분, 초 형식
+-- ※ 밀리세컨드 ==> 출퇴근 기록부(?) + SYSTIMESTAMP or ??
+SELECT  SYSDATE 현재시간날짜, SYSTIMESTAMP 현재시간날짜밀리세컨즈_GMT표준시
+FROM    DUAL;
+
+-- ALTER SESSION SET NLS_DATE_FORMAT = 'RR/MM/DD HH:MI:SS'; -- 이것보다는 가급적이면 변환함수!!
+
+[예제 3-27]
+SELECT  TO_CHAR(SYSDATE, 'YYYY-MM-DD') AS DATE_FMT1,
+        TO_CHAR(SYSDATE, 'YYYY/MM/DD') AS DATE_FMT2,
+        TO_CHAR(SYSDATE, 'YYYY/MONTH/DD') AS DATE_FMT3,
+        TO_CHAR(SYSDATE, 'YYYY/MM/DD HH:MI:SS') AS DATE_FMT4,
+        TO_CHAR(SYSDATE, 'YYYY/MM/DD DAY') AS DATE_FMT5
+FROM    DUAL;
+
+
+-- 3.4.2 TO_DATE()
+-- 문자를 날짜로 변환한 결과를 반환하는 함수
+-- TO_CHAR와 같은 fmt (날짜 포맷 모델)을 사용한다.
+-- 문자, 날짜는 '(single quote)'로 표시
+[예제 3-30]
+SELECT  TO_DATE('2013-05-27') DATE1,
+        TO_DATE('2013-06-27 11:12:35', 'YYYY/MM/DD HH:MI:SS AM') DATE2,
+        TO_DATE('2013-06-27 11:12:35', 'YYYY/MM/DD HH:MI:SS PM') DATE3
+FROM    DUAL; -- 단순한 연산, 함수의 결과값 확인할 때 쓰는 테이블(SYS/SYSTEM 계정)
+
+ALTER SESSION SET NLS_DATE_FORMAT = 'RR/MM/DD HH:MI:SS'; -- AM(오전), PM(오후)
+
+SELECT  employee_id, first_name, salary, department_id
+FROM    employees; -- 숫자: 오른쪽, 문자 : 왼쪽 정렬
+-- 100	Steven	24000	90
+-- 101	Neena	17000	90
+
+-- 3.4.3 TO_NUMBER()
+-- 문자를 숫자로 변환하여 반환하는 함수
+
+[예제 3-29]
+SELECT  TO_NUMBER('12345')+1000 "문자를 숫자로1",
+        TO_NUMBER('123.45') "문자를 숫자로2"
+FROM    DUAL;
+
+-- 3.5 NULL 관련함수(p.32)
+-- ※ NULL 자체는 빈값, 비교 연산 등을 할 수 없음 ==> 올바른 데이터 조회가 되지 않기에..
+-- IS NULL, IS NOT NULL로만 NULL 데이터를 조회 vs department_id = ' '(x)
+
+-- 3.5.1 NVL(exp1, exp2) : exp1이 NULL이면 exp2 반환, exp1 NULL 아니면 exp1 반환하는 함수
+-- NVL의 파라미터인 exp1, exp2는 데이터 유형이 서로 같아야 한다.
+-- 커미션 금액이 1000(달러) 미만인 사람에게만, 보너스 지급!!
+-- 커미션 금액 = 급여(salary) * commission_pct
+
+[예제 3-31]
+-- 총 107명
+-- 커미션율 NULL 아닌, 35명
+-- 커미션금액 1000달러 미만 : 6명
+SELECT  employee_id, first_name, salary, commission_pct, salary * commission_pct AS comm -- 거래 수수료 
+FROM    employees
+WHERE   salary * commission_pct < 1000; --1000달러 미만인자
+-- 판매부서가 대다수, 부서가 배정되지 않은 사람 1명 (kimberely)
+-- 1000달러 미만의 커미션을 받는 사람이 6명 밖에 없지는 않을 것 같은데
+-- 커미션 요율이 없는 일반 사원은 ==> 커미션 금액이 NULL 아닌, 0으로 처리하도록!
+
+[예제 3-32]
+SELECT  employee_id, first_name, salary, commission_pct, salary * NVL(commission_pct, 0) AS comm -- 거래 수수료 
+FROM    employees
+WHERE   salary * NVL(commission_pct, 0) < 1000; --1000달러 미만인자 ~ 0원 : 78 rows
+
+
+-- 3.5.2 NVL2(exp1, exp2, exp3) : exp1이 NULL이면 exp3 반환, exp1이 NULL 아니면 exp2를 반환하는 함수
+-- salary와 커미션 금액 합한 금액이 '총 급여(TOTAL_SALARY)'
+-- 커미션을 받지 않으면,  salary가 '총 급여'
+SELECT  employee_id, first_name, salary, commission_pct, 
+        NVL2(commission_pct, salary+salary*commission_pct, salary) AS "TOTAL SALARY"
+FROM    employees;
+
+
+
+
+-- ※ 이름이 같고, 파라미터 객수가 조금 다름 ==> 쓰임새를 놓고 보면 NVL2가 활용도가 높다.
+
+-- NULL이 왜 있을까? ==> 당연히 NULL이 없어야 하나, 입력하는 과정(=데이터 입력하는 사람)
+-- 데이터 처리 --> 이상치(abnormal), NULL 처리 ==> 데이터 전처리
+
+-- 3.5.3 COALESCE(exp1, exp2, exp3, ...) : 파라미터 목록에서 첫 번째로 NULL이 아닌 exp를 반환하는 함수
+-- 파라미터 목록에 NULL아닌 값이 하나는 존재해야함 ==> 모두 NULL이면 NULL반환!!
+--  전화번호    집    사무실    연락처     phone
+--  362.7797   NULL    NULL      NULL      NULL
+--    NULL     NULL    NULL      NULL      010-1234-5678    
+
+[예제 3-35]
+SELECT  COALESCE('A', 'B', 'C', NULL) first,
+        COALESCE(NULL, 'B', 'C', 'D') second,
+        COALESCE(NULL, NULL, 'C', NULL) third
+FROM    DUAL;
+
+------------------------------------------------------------
+------------- 집전화1 집전화2 사무실전화 휴대폰 ------------
+------------------------------------------------------------
+SELECT  COALESCE('362-7797', NULL, NULL, NULL) first,
+        COALESCE(NULL, '010-1234-5678', NULL, NULL) second,
+        COALESCE(NULL, NULL, '362-7797', NULL) third
+FROM    DUAL;
+
+
+-- 3.6 DECODE와 CASE
+-- 보통 조건에 따른 처리, IF~ELSE / SWITCH(case) ..
+-- 오라클에서는 조건에 따른 처리 ==> 함수 DECODE
+-- 오라클PL/SQL에서는 IF~ELSE 있음.
+
+-- 3.6.1 DECODE(exp, search1, result1, search2, result2, ... [,default]) : IF~ELSE처럼 exp를 검사
+-- search와 일치하면 result1 반환, search2와 일치하면 result2 반환, ... [일치하는게 없으면, 기본반환]
+-- 등가비교(=동등비교)
+
+[예제 3-36] 보너스 지급에 있어, 20번 부서는 20%   (salary의 20%)
+                                30번 부서는 30%,  (salary의 30%)
+                                40번 부서는 40%,  (salary의 40%)
+                                그 외 부서는 0(=지급하지 않는다)    전체사원 대상으로 조회한다.
+                                
+SELECT  employee_id, last_name, department_id, salary, 
+        DECODE(department_id, 20, salary * 0.2 
+                            , 30, salary * 0.3 
+                            , 40, salary * 0.4
+                            , 0) AS bonus
+FROM    employees;
+
+
+
+-- 3.6.2 CASE : 함수라기보다 더 큰 개념을 가진 표현식이다.
+-- 동등비교, 더 다양한 비교 연산을 할 수 있다. ex>범위비교 (크다, 작다...)
+-- 3.6.2.1 CASE I (동등비교) <---> DECODE와 같은 역할 : 바꿔서 쓸 수도?
+/*
+CASE exp WHEN search1 THEN result1
+         WHEN serach2 THEN result2
+         ...계속...
+         [ELSE default]
+END
+*/
+[예제 3-37] 보너스 지급에 있어, 20번 부서는 20%   (salary의 20%)
+                                30번 부서는 30%,  (salary의 30%)
+                                40번 부서는 40%,  (salary의 40%)
+                                그 외 부서는 0(=지급하지 않는다)    전체사원 대상으로 조회한다.
+                                
+SELECT  employee_id, last_name, department_id, salary, 
+        CASE department_id WHEN 20 THEN salary*0.2
+                           WHEN 30 THEN salary*0.3
+                           WHEN 40 THEN salary*0.4
+                           ELSE 0
+        END AS bonus
+FROM    employees;
+
+
+
+-- 3.6.2.2 CASE II (다양한 비교) <---> DECODE는 할 수 없는..범위에 따른 비교
+/*
+CASE WHEN condition1 THEN result1
+     WHEN condition2 THEN result2
+     ...계속...
+     [ELSE default]
+END
+*/
+
+보너스 지급에 있어서 30번 미만 부서는 급여의 10%를 보너스로 지금,
+                     30번부터 50번 부서까지는 급여의 20%를 보너스로 지급,
+                     60번부터 80번 부서까지는 급여의 30%를 지급하고, 
+                     그 외의 부서는 40%를 지급한다고 할 때,
+CASE 표현식을 이용해, 전 사원의 정보와 보너스 금액의 조회하시오.
+
+SELECT  employee_id, last_name, department_id, salary, 
+        CASE WHEN department_id <30 THEN salary*0.1
+             WHEN department_id BETWEEN 30 AND 50 THEN salary*0.2
+             WHEN department_id BETWEEN 60 AND 80 THEN salary*0.3
+             ELSE ROUND(salary*0.4)
+        END AS bonus
+FROM    employees;
+
+
+
+
+
+
+
 
 -- 고급함수 : 데이터 사이언티스트(DS), 데이터 분석가(DA)들이 사용하는 함수
