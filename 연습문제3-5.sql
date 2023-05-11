@@ -54,11 +54,11 @@ ORDER BY job_grade;
 SELECT  employee_id, first_name||' '||last_name AS name, hire_date AS 입사년도, 
         ROUND(MONTHS_BETWEEN(SYSDATE, hire_date)/12) AS 근무년수1,
         TO_CHAR(SYSDATE, 'YYYY') - TO_CHAR(hire_date, 'YYYY') AS 근무년수2 -- 묵시적 형변환(자동형변환)
-        CASE WHEN ROUND(MONTHS_BETWEEN(SYSDATE, hire_date)/12) >=10 AND ROUND(MONTHS_BETWEEN(SYSDATE, hire_date)/12) <15 THEN '10년 이상 근속'
-             WHEN ROUND(MONTHS_BETWEEN(SYSDATE, hire_date)/12) >=15 AND ROUND(MONTHS_BETWEEN(SYSDATE, hire_date)/12) <20 THEN '15년 이상 근속'
-             WHEN ROUND(MONTHS_BETWEEN(SYSDATE, hire_date)/12) >=20 THEN '20년 이상 근속'
-             ELSE NULL
-        END AS 근속상태
+        CASE WHEN ROUND(MONTHS_BETWEEN(SYSDATE, hire_date) / 12) >= 10 AND ROUND(MONTHS_BETWEEN(SYSDATE, hire_date) / 12) <15 THEN '10년 이상 근속'
+            WHEN ROUND(MONTHS_BETWEEN(SYSDATE, hire_date) / 12) >= 15 AND ROUND(MONTHS_BETWEEN(SYSDATE, hire_date) / 12) <20 THEN '15년 이상 근속'            
+            WHEN ROUND(MONTHS_BETWEEN(SYSDATE, hire_date) / 12) >= 20 THEN '20년 이상 근속'            
+            ELSE ' '
+       END AS 근속상태
 FROM    employees
 ORDER BY 4 DESC, 5 DESC;
                       
