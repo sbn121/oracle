@@ -10,6 +10,9 @@ HAVING  COUNT(*) >=2
 ORDER BY 2 DESC;
 
 
+
+
+
 2. 부서번호, 각 부서별 급여총액과 평균급여를 조회하는 쿼리문을 작성한다.
 (단, 부서 평균급여가 8000 이상인 부서만 조회)
 
@@ -18,6 +21,7 @@ FROM    employees
 GROUP BY department_id
 HAVING  AVG(salary) >= 8000
 ORDER BY 1;
+
 
 
 3. 년도, 년도별로 입사한 사원 수를 조회하는 쿼리문을 작성한다.
