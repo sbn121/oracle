@@ -149,37 +149,87 @@ FROM    employees e, jobs j
 WHERE   e.job_id = j.job_id
 AND     salary = ( SELECT MIN(salary) AS max_sal
                     FROM    employees ); -- olson
-    
+  
 
--- 6.2 다중 행 서브쿼리(p.53) 
+-- 6.2 다중 행 서브쿼리(p.53)
 -- 다중 행 연산자 (IN, NOT, ANY(=SOME), ALL, EXISTS)
+
 -- 6.2.1 IN 연산자
 -- OR 연산자 대신 --> 간결
 
-SELECT  employee_id, first_name, department_id
+SELECT employee_id, first_name, department_id
 FROM    employees
 --WHERE   department_id = 50
 --OR      department_id = 80;
-WHERE   department_id IN (50,80);
+WHERE   department_id IN (50, 80);
 
-[예제 6-5] 부서(위치코드, location_id)가 영국(UK)인 부서코드, 위치코드, 부서명 정보를 조회한다.
+[예제6-5] 부서(위치코드, location_id)가 영국(UK)인 부서코드, 위치코드, 부서명 정보를 조회한다.
+-- 1. 영국의 위치코드를 조회
+SELECT  location_id
+FROM    locations
+WHERE   country_id = 'UK'; -- 2400, 2500, 2600 : 영국에 부서 여러개~
 
+-- 2. 서브쿼리
 SELECT  department_id, location_id, department_name
 FROM    departments
-WHERE   location_id IN (select location_id from locations where country_id = 'UK');
+--WHERE   location_id = (2400, 2500, 2600); 
+--WHERE   location_id = 2400
+--OR      location_id = 2500
+--OR      location_id = 2600
+-- WHERE    location_id IN (2400, 2500, 2600)
+-- ORA-01797: 연산자의 뒤에 ANY 또는 ALL을 지정해 주십시오  ==> = ANY () 나 = ALL () 형태로 작성
+-- 01797. 00000 -  "this operator must be followed by ANY or ALL"
 
--- 6.2.1 NOT 연산자
--- 6.2.1 ANY(=SOME) 연산자
--- 6.2.1 ALL 연산자
--- 6.2.1 EXISTS 연산자
+
+-- 6.2.2 ANY(=SOME) 연산자
+-- 서브쿼리 결과 값 중 어느 하나만 만족되더라도 행을 반환한다.
+-- = 만 사용할 때
+SELECT  department_id, location_id, department_name
+FROM    departments
+WHERE   location_id = ANY(SELECT  location_id
+FROM    locations
+WHERE   country_id = 'UK';); 
+
+[예제 6-6] 70번 부서원의 급여보다 높은 급여를 받는 사원의 사번, 이름, 부서번호, 급여를 급여 순으로 조회한다.
+-- 1. 70번 부서원의 급여를 조회
+SELECT 
+
+-- 1.1
+
+SELECT  employee_id, first_name, department_id, salary
+FROM    employees
+WHERE   salary > ANY (SELECT salary FROM employees WHERE department_id = 50)
+ORDER BY salary;
+--ORA-01427: 단일 행 하위 질의에 2개 이상의 행이 리턴되었습니다.
+--01427. 00000 -  "single-row subquery returns more than one row"
+
+[예제 6-7]
+SELECT  employee_id, first_name, department_id, salary
+FROM    employees
+WHERE   salary > (SELECT MIN(salary) FROM employees WHERE department_id = 50)
+ORDER BY salary;
+
+[예제 6-8] 10번 부서원의 급여보다 적은 급여를 받는 사원의 사번, 이름, 부서번호, 급여를 급여 순으로 조회한다.
+SELECT  employee_id, first_name, department_id, salary
+FROM    employees
+WHERE   salary < ANY (SELECT salary FROM employees WHERE department_id = 10)
+ORDER BY salary;
+
+[예제 6-9] 
+SELECT  employee_id, first_name, department_id, salary
+FROM    employees
+WHERE   salary < (SELECT MAX(salary) FROM employees WHERE department_id = 10)
+ORDER BY salary;
+
+
+-- 6.2.3 NOT 연산자
+-- 6.2.4 ALL 연산자
+-- 6.2.5 EXISTS 연산자
 
 
 
 
 -- 6.3 다중 컬럼 서브쿼리
-
-
-
 
 
 -- 연관성의 유무?
