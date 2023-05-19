@@ -68,6 +68,8 @@ FROM    emp;
 INSERT INTO emp  -- 컬럼나열 없이 ==> 갯수, 순서순서를 지켜야함
 VALUES (301, 'Bill', 'Gates', TO_DATE('2013-05-26 10:00:00','YYYY-MM-DD HH:MI:SS'), NULL, NULL, NULL, NULL);
 
+INSERT INTO emp (emp_id, fname, lname, hire_date) VALUES (301, 'Bill', 'Gates', TO_DATE('2013-05-26', 'YYYY-MM-DD'));
+
 SELECT *
 FROM    emp;
 
@@ -131,6 +133,7 @@ SELECT  employee_id, first_name, last_name, hire_date, job_id, department_id
 FROM    employees
 WHERE   department_id IN (10, 20);
 
+
 SELECT *
 FROM    emp;
 
@@ -187,6 +190,11 @@ INSERT INTO emp
 SELECT  employee_id, first_name, last_name, hire_date, job_id, salary, commission_pct, department_id
 FROM    employees
 WHERE   department_id BETWEEN 30 AND 60; -- 조회된 데이터는 57명
+
+INSERT INTO emp
+SELECT  employee_id, first_name, last_name, hire_date, job_id, salary, commission_pct, department_id
+FROM    employees
+WHERE   department_id BETWEEN 30 AND 60;
 
 COMMIT;
 
@@ -335,7 +343,46 @@ SET emp_count = ( SELECT COUNT(*)
 -- ※ 서브쿼리가 반복됨..WHERE절, GROUP BY 절! ==> 다중컬럼 서브쿼리로 처리하면 훨씬 간결하다!
 -- 다중 컬럼 서브쿼리 ==> UPDATE 문에서 활용!
 
-    
+UPDATE  month_salary m
+SET     emp_count = (SELECT count(*) FROM employees e WHERE e.department_id = m.dept_id GROUP BY e.department_id ),
+        sum_sal = (SELECT sum(salary) FROM   employees e WHERE e.department_id = m.dept_id  GROUP BY e.department_id),
+        avg_sal = (SELECT round(avg(salary)) FROM employees e WHERE e.department_id = m.dept_id GROUP BY e.department_id);
+        
+[예제 8-14] month_salary2의 emp_count, sum_sal, avg_sal 컬럼을 다중컬럼 서브쿼리를 활용해
+employees의 부서별 집계된 데이터를 업데이트하시오!
+
+UPDATE  month_salary m
+SET     (emp_count, sum_sal, avg_sal) = 
+        (SELECT count(*), sum(salary), round(avg(salary)) FROM employees e WHERE e.department_id = m.dept_id GROUP BY e.department_id);
+commit;
+
+-- 8.3 데이터 삭제 DELETE
+-- 테이블의 행 데이터를 삭제하는 기본 문법
+-- WHERE 절의 조건에 일치하는 행 데이터를 삭제한다. (WHERE절 생략시 모든 행 데이터가 삭제됨)
+/*
+DELETE FROM 테이블명
+WHERE   조건
+*/
+
+[예제 8-15] emp 테이블에서 60번 부서의 사원 정보를 삭제한다.
+DELETE FROM emp
+WHERE   dept_id = 60;
+
+SELECT *
+FROM    EMP;
+
+COMMIT;
+
+rollback;
+
+-- WHERE 절 생략 시 모든 데이터가 삭제되므로 주의!!
+
+[예제 8-16] emp 테이블에서 모든 사원 정보를 삭제한다.
+DELETE FROM emp;
+
+
+
+
 
 
 
