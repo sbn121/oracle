@@ -1,0 +1,33 @@
+CREATE TABLE CUSTOMER (
+    ID NUMBER PRIMARY KEY,
+    NAME NVARCHAR2(17) NOT NULL,
+    GENDER NVARCHAR2(1) DEFAULT '여' CHECK (GENDER IN ('남', '여')) ,
+    EMAIL VARCHAR2(100),
+    PHONE VARCHAR2(50)
+);
+--다국어 처리나 데이터의 길이가 중요한 겨우 => NVARCHAR2 사용
+
+DROP TABLE CUSTOMER;
+
+SELECT * FROM CUSTOMER;
+
+INSERT INTO CUSTOMER 
+VALUES (1, '손흥민', '남', 'shm@naver.com', '010-1234-5678');
+INSERT INTO CUSTOMER 
+VALUES (2, '권창훈', '남', 'gch@naver.com', '010-1234-5678');
+INSERT INTO CUSTOMER 
+VALUES (3, '오현규', '남', 'ohg@naver.com', '010-1234-5678');
+INSERT INTO CUSTOMER 
+VALUES (4, '정우영', '남', 'jyy@naver.com', '010-1234-5678');
+INSERT INTO CUSTOMER 
+VALUES (5, '조규성', '남', 'jgs@naver.com', '010-1234-5678');
+
+UPDATE CUSTOMER
+SET GENDER = '남'
+WHERE ID = 1;
+
+COMMIT;
+
+SELECT * FROM CUSTOMER WHERE ID = 1;  -- ?<-
+
+

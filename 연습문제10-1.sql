@@ -194,3 +194,82 @@ FROM    characters;
 COMMIT;
 
 
+-- 9. charaters 테이블의 master_id컬럼은 employees 테이블의 manager_id와 같은 역할을 한다.
+-- 매니저 사원의 사번 : manager_id
+-- master_id : 캐릭터중 마스터의 캐릭터id
+SELECT *
+FROM    characters; -- master_id가 NULL인데, 마스터에 해당하는 캐릭터의 id로 알맞게 변경
+
+SELECT character_id
+FROM    characters
+WHERE   character_name = '오비완 케노비';
+
+-- 2명
+UPDATE  characters
+SET master_id = (   SELECT character_id
+                    FROM    characters
+                    WHERE   character_name = '오비완 케노비')
+WHERE   character_name IN ('아나킨 스카이워커', '루크 스카이워커');
+
+-- 2rows
+UPDATE  characters
+SET master_id = (   SELECT character_id
+                    FROM    characters
+                    WHERE   character_name = '요다')
+WHERE   character_name IN ('마스터 윈두', '두쿠 백작');
+
+-- 2row
+UPDATE  characters
+SET master_id = (   SELECT character_id
+                    FROM    characters
+                    WHERE   character_name = '다쓰 시디어스')
+WHERE   character_name IN ('다쓰 베이더', '다쓰 몰');
+
+UPDATE  characters
+SET master_id = (   SELECT character_id
+                    FROM    characters
+                    WHERE   character_name = '콰이곤 진')
+WHERE   character_name = '오비완 케노비';
+
+UPDATE  characters
+SET master_id = (   SELECT character_id
+                    FROM    characters
+                    WHERE   character_name = '두쿠 백작')
+WHERE   character_name = '콰이곤 진';
+
+
+SELECT *
+FROM    characters;
+
+commit;
+
+
+-- 10. casting (등장인물과 실제 배우 정보 테이블)의 기본키는 episode_id, character_id
+-- 두 컬럼은 각각 star_wars와 characters 테이블의 기본키를 참조하고 있다.
+-- 참조키를 생성하라
+--                                          (PK)          (FK)
+-- 제약조건 : NOT NULL, CHECK, UNIQUE, PRIMARY KEY, FOREIGN KEY
+--            컬럼 , 컬럼/테이블 ~
+--                             <-- 복합키                   -->
+
+-- 테이블 생성시 제약조건 정의 : 컬럼/테이블 레벨
+
+-- 이미 테이블이 생성된 뒤 제약조건 추가
+-- star_wars 테이블의 episode_id 컬럼을 참조하는 casting 테이블의 episode_id 컬럼에 FK: Foreign Key 제약조건 지정
+ALTER TABLE casting
+ADD CONSTRAINT star_wars_episode_id_fk FOREIGN KEY (episode_id) REFERENCES star_wars (episode_id);
+
+-- characters 테이블의 character_id 컬럼을 참조하는 casting 테이블의 character_id 컬럼에 FK 제약조건 지정
+ALTER TABLE casting
+ADD CONSTRAINT characters_character_id_fk FOREIGN KEY (character_id) REFERENCES characters (character_id);
+
+
+
+
+ 
+
+
+
+
+
+
