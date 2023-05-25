@@ -136,7 +136,7 @@ FROM    characters;
     
 
 -- 7. 역할이 제다이에 해당하는 배역들의 배역이름, 그의 마스터
--- 서브쿼리
+-- 서브쿼리 : SELECT 절에 괄호 ==> 스칼라 서브쿼리 : 컬럼처럼 사용 ==> 단일 값
 -- NULL 처리 함수 : NVL(exp1, exp2), NVL2(exp1,exp2,exp3)
 -- COALESCE() : 최소 하나는 NULL 아니어야 하는 .. 최초 NULL아닌 값 반환 함수
 SELECT  m.character_name AS master_name
@@ -145,7 +145,7 @@ WHERE   c.master_id = m.character_id; -- 셀프조인 : 캐릭터/마스터 테이블 조인
 
 -- 스칼라 서브쿼리 : 단일 행 반환 (컬럼처럼) : x
 -- NULL 처리 함수 :   O   
-SELECT  c.character_name, NVL(m.character_name, '마스터의 마스터') AS master_name
+SELECT  c.character_name, NVL(m.character_name, '제다이 중의 제다이') AS master_name
 FROM    characters c, roles r, characters m
 WHERE   c.role_id = r.role_id
 AND     r.role_name = '제다이'
@@ -189,18 +189,17 @@ GROUP BY  ch.character_name, ca.real_name;
 
 
 -- 11. 위 쿼리문을 참고한 상위 3명의 배역명, 실명, 출연횟수
--- 인라인 뷰 서브쿼리 활용 하거나
--- RANK(), DENSE_RANK() 함수를 활용
-
+-- 인라인 뷰 서브쿼리 활용 하거나 : WHERE ROWNUM <= 5;
+-- 서브쿼리에서 ORDER BY 절은 아주 특별한 경우가 아니라면  사용하지 않는다.
 SELECT e.*
 FROM    (   SELECT  ch.character_name, ca.real_name, COUNT(*) AS times
             FROM    characters ch, casting ca
             WHERE   ch.character_id = ca.character_id
-            GROUP BY  ch.character_name, ca.real_name ) e
+            GROUP BY  ch.character_name, ca.real_name ) e    --  ORDER BY 1
 WHERE ROWNUM <= 3;
 
 -- 가공한 CASTING 데이터가 모두 각 시리즈별 3명씩 ==> 21명이 출연 (실제 데이터와 차이발생 가능)
-
+-- 실제 랭킹을 메기는 함수 : AVERAGE_RANK()만 21c에서는 사용x
 SELECT  ch.character_name, ca.real_name, COUNT(*) AS times,
         RANK() OVER (ORDER BY COUNT(*) ASC) AS RANK,
         DENSE_RANK() OVER (ORDER BY COUNT(*) ASC) AS DENSE_RANK
@@ -221,6 +220,8 @@ ORDER BY 3 DESC;
 
 -- 실제 스타워즈 영화정보와 일치하는지는 따져봐야 알수 있고, 가공된 CASTING 테이블 데이터에 따라
 -- 다를 수 있음.
+
+COMMIT;
 
 
 
